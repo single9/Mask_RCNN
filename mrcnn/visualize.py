@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 from matplotlib import patches,  lines
 from matplotlib.patches import Polygon
 import IPython.display
+import cv2
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../")
@@ -498,3 +499,41 @@ def display_weight_stats(model):
                 "{:+9.4f}".format(w.std()),
             ])
     display_table(table)
+
+def draw_bbox_and_masks(image, boxes, masks, class_ids, class_names, scores=None, colors=None):
+    """Draw boxes and masks on the given image by Open CV
+    """
+    N = boxes.shape[0]
+    assert boxes.shape[0] == masks.shape[-1] == class_ids.shape[0]
+    
+    if not colors:
+        colors = random_colors(N)
+
+    height, width = image.shape[:2]
+    masked_image = image.astype(np.uint32).copy()
+
+    for i in range(N):
+        color = colors[i]
+
+        mask = masks[:, :, i]
+        masked_image = apply_mask(masked_image, mask, color)
+        masked_image = masked_image.astype(np.uint8)
+
+        # Bounding box
+        if not np.any(boxes[i]):
+            # Skip this instance. Has no bbox. Likely lost in image cropping.
+            continue
+        
+        color = tuple(color * np.array([255, 255, 255]))
+        y1, x1, y2, x2 = boxes[i]
+        cv2.rectangle(masked_image, (x1, y1), (x2, y2), color)
+
+        # Add label
+        class_id = class_ids[i]
+        score = scores[i] if scores is not None else None
+        label = class_names[class_id]
+        caption = "{} {:.3f}".format(label, score) if score else label
+        cv2.putText(masked_image, caption, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.4, (255, 255, 255), 1, cv2.LINE_AA)
+
+    return masked_image
