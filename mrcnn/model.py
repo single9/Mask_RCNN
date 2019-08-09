@@ -2537,6 +2537,9 @@ class MaskRCNN():
             })
         return results
 
+    def release(self):
+        K.clear_session()
+
     def detect_molded(self, molded_images, image_metas, verbose=0):
         """Runs the detection pipeline, but expect inputs that are
         molded already. Used mostly for debugging and inspecting
