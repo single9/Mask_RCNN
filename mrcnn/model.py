@@ -2092,6 +2092,30 @@ class MaskRCNN():
         checkpoint = os.path.join(dir_name, checkpoints[-1])
         return checkpoint
 
+    def remove_old(self, retain_amount=1):
+        dir_names = next(os.walk(self.model_dir))[1]
+        key = self.config.NAME.lower()
+        dir_names = filter(lambda f: f.startswith(key), dir_names)
+        dir_names = sorted(dir_names)
+        if not dir_names:
+            import errno
+            raise FileNotFoundError(
+                errno.ENOENT,
+                "Could not find model directory under {}".format(self.model_dir))
+
+        if len(dir_names) <= retain_amount:
+            return
+        
+        removed_dir_count = len(dir_names) - retain_amount
+        _temp = dir_names[0:removed_dir_count]
+
+        import shutil
+        for name in _temp:
+            dir_name = os.path.join(self.model_dir, name)
+            shutil.rmtree(dir_name, ignore_errors=True)
+
+        print(removed_dir_count, "old weights removed")
+        
     def load_weights(self, filepath, by_name=False, exclude=None):
         """Modified version of the corresponding Keras function with
         the addition of multi-GPU support and the ability to exclude
