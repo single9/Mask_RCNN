@@ -2368,7 +2368,7 @@ class MaskRCNN():
         callbacks = [
             keras.callbacks.TensorBoard(log_dir=self.log_dir,
                                         histogram_freq=0, write_graph=True, write_images=False),
-            keras.callbacks.ModelCheckpoint(self.checkpoint_path, monitor='val_loss',
+            keras.callbacks.ModelCheckpoint(self.checkpoint_path, monitor='loss',
                                             save_best_only=True, mode='min',
                                             verbose=1, save_weights_only=True),
         ]
