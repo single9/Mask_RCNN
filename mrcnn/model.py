@@ -30,6 +30,10 @@ from distutils.version import LooseVersion
 assert LooseVersion(tf.__version__) >= LooseVersion("1.3")
 assert LooseVersion(keras.__version__) >= LooseVersion('2.0.8')
 
+# prevent tensorflow eat my totally gpu memory
+tf_config = tf.ConfigProto()
+tf_config.gpu_options.allow_growth=True
+sess = tf.Session(config=tf_config)
 
 ############################################################
 #  Utility Functions
